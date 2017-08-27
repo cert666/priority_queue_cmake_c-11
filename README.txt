@@ -1,0 +1,1 @@
+unzip cmake.zip and mingw32.zip and run build.bat
