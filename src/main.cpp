@@ -22,9 +22,11 @@ const uint16_t QUEUE_SIZE = 100;
 const uint8_t LOW_WM_THRESHOLD = 10;
 
 /// high water mark threshold 0 - 100%
-const uint8_t HIGH_WM_THRESHOLD = 90;
+const uint8_t HIGH_WM_THRESHOLD = 20;
 
+/// value which will be send on queue from thread "producer_first_foo"
 const int16_t VAL_PROD_1 = 99;
+/// value which will be send on queue from thread "producer_second_foo"
 const int16_t VAL_PROD_2 = -5;
 
 
@@ -77,8 +79,7 @@ void consumer_second_foo(p_Prior_queue_t queue);
 //////////////////////////////////////////////////////////////////////////////////
 int main()
 {
-	std::vector<int16_t> produc_12_vect(produc_1_vect);
-	std::vector<int16_t> consum_12_vect(consum_1_vect);
+
 	uint16_t count_prod, count_consum;
 
 
@@ -105,17 +106,19 @@ int main()
 		consumer_first.detach();
 		consumer_second.detach();
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(10000));
-
-	
+		std::this_thread::sleep_for(std::chrono::milliseconds(10000));	
 
 		/// merge two producer vectors
+		std::vector<int16_t> produc_12_vect(produc_1_vect);
 		produc_12_vect.insert(produc_12_vect.end(), produc_2_vect.begin(), produc_2_vect.end());
+
+		std::vector<int16_t> consum_12_vect(consum_1_vect);
 		consum_12_vect.insert(consum_12_vect.end(), consum_2_vect.begin(), consum_2_vect.end());
 
 		
-
+		/// count items of the value VAL_PROD_1 in producer buffer
 		count_prod = std::count(produc_12_vect.begin(), produc_12_vect.end(), VAL_PROD_1);
+		/// count items of the value VAL_PROD_1 in consumer buffer
 		count_consum = std::count(consum_12_vect.begin(), consum_12_vect.end(), VAL_PROD_1);
 
 		if (count_prod != count_consum)
@@ -127,7 +130,9 @@ int main()
 			std::cout << "count of received values: " << VAL_PROD_1 << " is the same - test passed" << std::endl;
 		}
 
+		/// count items of the value VAL_PROD_2 in producer buffer
 		count_prod = std::count(produc_12_vect.begin(), produc_12_vect.end(), VAL_PROD_2);
+		/// count items of the value VAL_PROD_2 in consumer buffer
 		count_consum = std::count(consum_12_vect.begin(), consum_12_vect.end(), VAL_PROD_2);
 
 		if (count_prod != count_consum)
@@ -154,18 +159,18 @@ int main()
 void producer_first_foo(p_Prior_queue_t queue)
 {
 	try {
-	std::vector<int16_t>::iterator it = produc_1_vect.begin();	
+		std::vector<int16_t>::iterator it = produc_1_vect.begin();	
 
-	while (it!= produc_1_vect.end())
-	{
-		if (!flag)
-		{			
-			queue->push(*it);
-			++it;
-		}
+		while (it!= produc_1_vect.end())
+		{
+			if (!flag)
+			{			
+				queue->push(*it);
+				++it;
+			}
 		
-	}
-	std::cout << "producer_first_foo STOPED" << std::endl;
+		}
+		std::cout << "producer_first_foo STOPED" << std::endl;
 	}
 	catch (...)
 	{
@@ -178,19 +183,19 @@ void producer_first_foo(p_Prior_queue_t queue)
 void producer_second_foo(p_Prior_queue_t queue)
 {
 	try {
-	std::vector<int16_t>::iterator it = produc_2_vect.begin();
+		std::vector<int16_t>::iterator it = produc_2_vect.begin();
 	
-	while (it != produc_2_vect.end())
-	{
-		if (!flag)
-		{			
-			queue->push(*it);
-			++it;
-		}
+		while (it != produc_2_vect.end())
+		{
+			if (!flag)
+			{			
+				queue->push(*it);
+				++it;
+			}
 		
-	}
+		}
 
-	std::cout << "producer_second_foo STOPED" << std::endl;
+		std::cout << "producer_second_foo STOPED" << std::endl;
 	}
 	catch (...)
 	{
@@ -203,20 +208,20 @@ void producer_second_foo(p_Prior_queue_t queue)
 void consumer_first_foo(p_Prior_queue_t queue)
 {
 	try {
-	std::this_thread::sleep_for(std::chrono::milliseconds(1));
-	while (1)
-	{
-		if (!queue->empty()) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		while (1)
+		{
+			if (!queue->empty()) {
 			
-			uint16_t result = queue->pop();
+				int16_t result = queue->pop();
 
-			consum_1_vect.push_back(result);
+				consum_1_vect.push_back(result);
 
-			std::cout << "consumer_first_foo " << result << " " << std::endl;
+				std::cout << "consumer_first_foo " << result << " " << std::endl;
 
-		}
+			}
 		
-	}
+		}
 	}
 	catch (...)
 	{
@@ -229,23 +234,23 @@ void consumer_first_foo(p_Prior_queue_t queue)
 void consumer_second_foo(p_Prior_queue_t queue)
 {
 	try {
-	std::this_thread::sleep_for(std::chrono::milliseconds(1));
-	while (1)
-	{
-		if (!queue->empty()) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		while (1)
+		{
+			if (!queue->empty()) {
 
-			uint16_t result = queue->pop();
+				int16_t result = queue->pop();
 
-			consum_2_vect.push_back(result);
+				consum_2_vect.push_back(result);
 
-			std::cout << "consumer_second_foo " << result << " " << std::endl;
+				std::cout << "consumer_second_foo " << result << " " << std::endl;
 
-		}
+			}
 		
+		}
 	}
-}
-catch (...)
-{
-	std::cout << "something wrong" << std::endl;
-}
+	catch (...)
+	{
+		std::cout << "something wrong" << std::endl;
+	}
 }

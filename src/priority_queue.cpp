@@ -98,9 +98,10 @@ bool Priority_queue::empty()
 std::size_t Priority_queue::size()
 {
 	std::size_t size;
-
+	/// lock mutex
 	mtx.lock();
 	size= buffer.size();
+	/// unlock mutex
 	mtx.unlock();
 	return size;
 }
@@ -115,7 +116,7 @@ void Priority_queue::push(int16_t item)
    std::cout << "PUSH " << item << " - occupied: " << buffer.size() * 100 / buffer_size << " %" << std::endl;
 
    /// check if threshold has been exceeded
-   if (buffer_size != 0 && buffer.size() * 100 / buffer_size >= hi_wm_threshold - 1)
+   if (((buffer_size != 0) && (buffer.size() * 100 / buffer_size + 1) >= hi_wm_threshold) )
    {
       ptr_wm_callback(true);
    }
@@ -142,7 +143,7 @@ int16_t Priority_queue::pop()
    std::cout << "POP - occupied: " << buffer.size() * 100 / buffer_size << " %" << std::endl;
   
 	/// check if threshold has been exceeded
-	if (buffer_size != 0 && buffer.size() * 100 / buffer_size <= low_wm_threshold + 1)
+	if ((buffer_size != 0) && (buffer.size() * 100 / buffer_size - 1 <= low_wm_threshold ))
 	{
 		ptr_wm_callback(false);
 	}
