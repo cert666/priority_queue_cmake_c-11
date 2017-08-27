@@ -9,8 +9,8 @@
 - set Visual Studio 2014 path in build.bat
 - run build.bat
 
-- run priority_queue.exe from build_MinGW folder - g++ build
-- run priority_queue.exe from build_MSVC\Debug folder - Visual Studio 2014 build
+- run priority_queue.exe from build_MinGW folder - g++ build  x86 machine
+- run priority_queue.exe from build_MSVC\Debug folder - Visual Studio 2014 build x86 machine
 
 ************************************
 * How to test the queue
